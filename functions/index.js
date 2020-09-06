@@ -44,9 +44,37 @@ app.patch('/update/:collectionName/:Id', async (req, res) => {
 });
 
 
-exports.helloWorld = functions.firestore.document('DateTime/{Id}').onCreate((snapshot, context) => {
+exports.helloWorld = functions.firestore.document('bell_01/{flag}').onUpdate((snapshot, context) => {
     msgData = snapshot.data();
     a = snapshot.id;
-    console.log("****************Document is Created**************");
-    console.log(`****************Document ID ${a}*****************`);
+    try {
+
+        const doc = admin.firestore().collection('bell_01').doc(a);
+        a1 = doc.id;
+
+        console.log("Document Id is ************** " + a1);
+        var payload = {
+            notification: {
+                title: "Bongo Alerts",
+                body: "Someone is ringing your bell",
+                sound: "default",
+                icon: "myicon",
+            },
+            data: {
+                id: a,
+                type: "Bongo",
+                click_action: "FLUTTER_NOTIFICATION_CLICK"
+            }
+        }
+        admin.messaging().sendToTopic('BongoAlerts', payload).then((response) => {
+            console.log("Ringing Alerts Pushed!");
+            return 0;
+        }).catch((err) => {
+            console.log(err);
+        });
+
+        return 0;
+    } catch (e) {
+        console.log("from try/catch error:" + e);
+    }
 });
