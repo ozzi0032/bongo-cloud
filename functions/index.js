@@ -45,14 +45,15 @@ app.patch('/update/:collectionName/:Id', async (req, res) => {
 
 
 exports.helloWorld = functions.firestore.document('bell_01/{flag}').onUpdate((snapshot, context) => {
-    msgData = snapshot.data();
-    a = snapshot.id;
+    const newValue = snapshot.after.data();
+    // a = snapshot.id;
+    console.log(`****************************ID jsdhjsdhfj`);
     try {
 
-        const doc = admin.firestore().collection('bell_01').doc(a);
-        a1 = doc.id;
+        // const doc = admin.firestore().collection('bell_01').doc(a);
+        // a1 = doc.id;
 
-        console.log("Document Id is ************** " + a1);
+        console.log("Document Id is ************** ");
         var payload = {
             notification: {
                 title: "Bongo Alerts",
@@ -61,20 +62,28 @@ exports.helloWorld = functions.firestore.document('bell_01/{flag}').onUpdate((sn
                 icon: "myicon",
             },
             data: {
-                id: a,
+                id: "dfgdfg",//a,
                 type: "Bongo",
                 click_action: "FLUTTER_NOTIFICATION_CLICK"
             }
         }
-        admin.messaging().sendToTopic('BongoAlerts', payload).then((response) => {
-            console.log("Ringing Alerts Pushed!");
-            return 0;
-        }).catch((err) => {
-            console.log(err);
-        });
+        if (newValue.isRinging) {
+            console.log(`*****************If statement ${newValue}`);
+            admin.messaging().sendToTopic('BongoAlerts', payload).then((response) => {
+                console.log("Ringing Alerts Pushed!");
+                return 0;
+            }).catch((err) => {
+                console.log(err);
+            });
+        }
+        else {
+            console.log(`*****************Else statement`);
+        }
+
 
         return 0;
     } catch (e) {
         console.log("from try/catch error:" + e);
+        return 0;
     }
 });
