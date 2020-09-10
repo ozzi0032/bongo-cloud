@@ -34,6 +34,17 @@ app.get('/get/:collectionName/:id', async (req, res) => {
     }
 });
 
+//Get the document with ID in the subCollection
+app.get('/get/:collectionName/:documentName/:subCollectionName/:docId', async (req, res) => {
+    try {
+        const alarmRef = db.collection(req.params.collectionName)
+            .doc(req.params.documentName).collection(req.params.subCollectionName).doc(req.params.docId);
+        await alarmRef.get().then(doc => res.status(200).send(doc.data()));
+    } catch (error) {
+        res.status(400).send('Invalid Request!!');
+    }
+});
+
 app.patch('/update/:collectionName/:Id', async (req, res) => {
     try {
         await firebaseHelper.firestore.updateDocument(db, req.params.collectionName, req.params.Id, req.body);
@@ -46,14 +57,12 @@ app.patch('/update/:collectionName/:Id', async (req, res) => {
 
 exports.helloWorld = functions.firestore.document('bell_01/{flag}').onUpdate((snapshot, context) => {
     const newValue = snapshot.after.data();
-    // a = snapshot.id;
-    console.log(`****************************ID jsdhjsdhfj`);
+    a = snapshot.id;
     try {
 
-        // const doc = admin.firestore().collection('bell_01').doc(a);
-        // a1 = doc.id;
+        const doc = admin.firestore().collection('bell_01').doc(a);
+        a1 = doc.id;
 
-        console.log("Document Id is ************** ");
         var payload = {
             notification: {
                 title: "Bongo Alerts",
@@ -62,15 +71,13 @@ exports.helloWorld = functions.firestore.document('bell_01/{flag}').onUpdate((sn
                 icon: "myicon",
             },
             data: {
-                id: "dfgdfg",//a,
+                id: a,
                 type: "Bongo",
                 click_action: "FLUTTER_NOTIFICATION_CLICK"
             }
         }
         if (newValue.isRinging) {
-            console.log(`*****************If statement ${newValue}`);
             admin.messaging().sendToTopic('BongoAlerts', payload).then((response) => {
-                console.log("Ringing Alerts Pushed!");
                 return 0;
             }).catch((err) => {
                 console.log(err);
